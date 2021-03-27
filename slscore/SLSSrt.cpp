@@ -22,12 +22,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #include <errno.h>
 #include <string.h>
 #include <map>
 #include <string>
 #include <memory.h>
+#include <sqlite3.h>
 
 #include "SLSSrt.hpp"
 #include "SLSLog.hpp"
@@ -43,6 +43,7 @@ bool CSLSSrt::m_inited = false;
 CSLSSrt::CSLSSrt()
 {
     memset(&m_sc, 0x0, sizeof(m_sc));
+    memset(m_db_passphrase, 0, 1024);
     m_sc.port = 8000;//for test
     m_sc.fd   = 0;
     m_sc.eid  = 0;
@@ -219,9 +220,124 @@ int CSLSSrt::libsrt_setup(int port)
     return SLS_OK;
 }
 
+void CSLSSrt::setup_passphrase_dbfile(const char *db_passphrase) {
+     if (NULL == db_passphrase || strlen(db_passphrase) == 0) {
+ 	    return ;
+ 	   }
+ 	strcpy(m_db_passphrase, db_passphrase);
+ }
+
+ char *CSLSSrt::get_passphrase_dbfile() {
+
+     return m_db_passphrase;
+ }
+
+ int set_passphrase(void* opaque, SRTSOCKET ns, int hs_version, const struct sockaddr* peeraddr, const char* streamid) {
+     CSLSSrt* tmp = (CSLSSrt*)(opaque);
+     char * dbfile = tmp->get_passphrase_dbfile();
+
+     if (NULL != dbfile && sizeof(dbfile) > 0) {
+
+         char get_pass_dbpath[1024] = {0};
+         sprintf(get_pass_dbpath, "%s?streamid=%s",
+                 dbfile, streamid);
+
+          string m_streamid = streamid;
+
+          // Get the interesting bit from the streamid
+          string last_element = m_streamid.substr(m_streamid.rfind("/") + 1);
+
+          if (NULL == last_element.c_str() || last_element.size() == 0) {
+                sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, no streamid parsed , response='%s'.",
+                tmp, m_streamid.c_str());
+                return SLS_ERROR;
+          }
+
+          // Pointer to SQLite connection
+          sqlite3* db;
+          sqlite3_stmt * stmt;
+          char *zErrMsg = 0;
+          int rc;
+          char sql[1024] = {0};
+
+          rc = sqlite3_open_v2(dbfile, &db, SQLITE_OPEN_READONLY, NULL);
+
+          if( rc ){
+            // Show an error message
+            sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, DB connect error, response='%s'.",
+                    tmp, sqlite3_errmsg(db));
+            // Close the connection
+            sqlite3_close(db);
+            // Return an error
+            return SLS_ERROR;
+          }
+
+          // Setup the SQL call
+          sprintf(sql, "SELECT passphrase FROM settings WHERE streamid = '%s';", last_element.c_str());
+
+          sqlite3_prepare_v2( db, sql, -1, &stmt, NULL );//preparing the statement
+
+          sqlite3_step( stmt );//executing the statement
+
+          // Convert the db output to a const char
+          const char *result = reinterpret_cast< const char* >(sqlite3_column_text(stmt, 0));
+
+
+          if (NULL == result || result == 0) {
+            sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, no passphrase found in DB or db file not found, stream name='%s'.",
+                    tmp, last_element.c_str());
+
+            sqlite3_close(db);
+            return SLS_ERROR;
+          }
+
+          // Copy result to string if found
+          string passphrase(result);
+          rc = sqlite3_finalize(stmt);
+
+          if( rc ){
+            sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, failed to finalize DB statement, response='%s'.",
+                    tmp, sqlite3_errmsg(db));
+
+            sqlite3_close(db);
+            return SLS_ERROR;
+          }
+
+          sqlite3_close(db);
+
+            if (NULL != passphrase.c_str() && passphrase.size() > 0) {
+                int ret = srt_setsockopt(ns, SOL_SOCKET, SRTO_PASSPHRASE, passphrase.c_str(), passphrase.size());
+                if (SLS_OK != ret) {
+                    sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, failed to set passphrase, response='%d'.",
+                            tmp, ret);
+
+                }
+                sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, passphrase setup correctly, response='%d'.",
+                        tmp, ret);
+                return ret;
+            } else {
+                    sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::set_passphrase, no passphrase found in DB, stream id='%s'.",
+                             tmp, last_element.c_str());
+                             return SLS_ERROR;
+              }
+     } else {
+
+       sls_log(SLS_LOG_INFO, "[%p]CSLSSrt::setup_passphrase_dbfile, no passphrase DB set.",
+       tmp);
+
+       return SLS_ERROR;
+
+     }
+     return SLS_OK;
+ }
+
+
 int CSLSSrt::libsrt_listen(int backlog)
 {
     m_sc.backlog = backlog;
+    if (NULL != m_db_passphrase && strlen(m_db_passphrase) > 0) {
+     (void)srt_listen_callback(m_sc.fd, &set_passphrase, this);
+    }
     int ret = srt_listen(m_sc.fd, backlog);
     if (ret)
         return libsrt_neterrno();
@@ -433,4 +549,3 @@ int CSLSSrt::libsrt_getpeeraddr(char * peer_name, int& port)
     }
     return ret;
 }
-

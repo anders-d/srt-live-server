@@ -3,7 +3,7 @@ MAIN_NAME=sls
 CLIENT_NAME=slc
 INC_PATH = -I./ -I../ -I./slscore -I./include
 LIB_PATH =  -L ./lib
-LIBRARY_FILE = -lpthread -lz -lsrt
+LIBRARY_FILE = -lpthread -lz -lsrt -lsqlite3
 BIN_PATH = ./bin
 
 DEBUG = -g
@@ -43,7 +43,7 @@ OBJS = $(OUTPUT_PATH)/SLSLog.o \
 	$(OUTPUT_PATH)/HttpClient.o\
 	$(OUTPUT_PATH)/SLSSyncClock.o\
 	$(OUTPUT_PATH)/TSFileTimeReader.o
-	
+
 CORE_PATH = slscore
 COMMON_FILES = common.hpp
 
@@ -63,4 +63,3 @@ $(OUTPUT_PATH)/%.o: ./$(CORE_PATH)/%.cpp
 clean:
 	rm -f $(OUTPUT_PATH)/*.o
 	rm -rf $(BIN_PATH)/*
-

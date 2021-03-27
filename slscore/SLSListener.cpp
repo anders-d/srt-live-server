@@ -297,6 +297,10 @@ int CSLSListener::start()
     }
     sls_log(SLS_LOG_INFO, "[%p]CSLSListener::start, libsrt_setup ok.", this);
 
+    char * tmp_get_pass_dbpath = ((sls_conf_server_t*)m_conf)->get_pass_dbpath;
+     if (NULL != tmp_get_pass_dbpath && strlen(tmp_get_pass_dbpath) > 0) {
+         m_srt->setup_passphrase_dbfile(tmp_get_pass_dbpath);
+     }
 
     ret = m_srt->libsrt_listen(m_back_log);
     if (SLS_OK != ret) {
@@ -573,6 +577,3 @@ std::string   CSLSListener::get_stat_info()
 	}
 	return m_stat_info;
 }
-
-
-

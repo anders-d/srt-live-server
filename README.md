@@ -1,3 +1,14 @@
+[Branch information]
+
+This SLS branch adds support for passphrases through the use of a sqlite3 database.
+The database file path is set through the new config option 'get_pass_dbpath' in sls.conf.
+
+The database needs to contain a table called 'settings'. The field 'streamid' contains your
+streamids, and the field 'passphrase' contain the corresponding passphrases.
+
+
+
+
 Introduction
 ============
 
@@ -40,12 +51,12 @@ $ ./sls -c ../sls.conf
 Test
 ====
 
-SLS only supports the MPEG-TS format streaming. 
+SLS only supports the MPEG-TS format streaming.
 
 1.test with ffmpeg
 ------------------
 
-you can push camera live stream by FFMPEG.Please download ffmpeg sourcecode from https://github.com/FFmpeg/FFmpeg, then compile FFMPEG with --enable-libsrt. 
+you can push camera live stream by FFMPEG.Please download ffmpeg sourcecode from https://github.com/FFmpeg/FFmpeg, then compile FFMPEG with --enable-libsrt.
 
 srt library is installed in folder /usr/local/lib64.
 if "ERROR: srt >= 1.3.0 not found using pkg-config" occured when compiling FFMPEG, please check the ffbuild/config.log file and follow its instruction to resolve this issue. in most cases it can be resolved by the following command:
@@ -158,11 +169,9 @@ v1.4.7
 
 v1.4.8
 ------
-1. compatible for srt v1.4.1, add the set latency method before setup method 
+1. compatible for srt v1.4.1, add the set latency method before setup method
 
 
 v1.4.9
 ------
 1. compatible for raspberrypi.
-
-

@@ -120,6 +120,8 @@ public :
 
     void libsrt_set_latency(int latency);
 
+    void setup_passphrase_dbfile(const char * db_passphrase);
+    char *get_passphrase_dbfile();
 
     static int  libsrt_neterrno();
     static void libsrt_print_error_info();
@@ -129,6 +131,7 @@ protected:
     SRTContext m_sc;
     char m_peer_name[256];//peer ip addr, such as 172.12.22.14
     int  m_peer_port ;
+    char m_db_passphrase[1024];
 
 private:
     static bool m_inited;
