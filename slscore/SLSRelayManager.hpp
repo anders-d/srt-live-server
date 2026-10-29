@@ -34,7 +34,7 @@
 #include "conf.hpp"
 #include "SLSRoleList.hpp"
 
-typedef struct SLS_RELAY_INFO {
+struct SLS_RELAY_INFO {
     std::vector<std::string>      m_upstreams;
     char     m_type[32];
     int      m_mode;

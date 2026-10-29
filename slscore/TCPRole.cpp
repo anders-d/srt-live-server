@@ -41,7 +41,7 @@ CTCPRole::CTCPRole()
     m_valid       = false;
 
     strcpy(m_remote_host, "");
-    sprintf(m_role_name, "tcp_role");
+    snprintf(m_role_name, sizeof(m_role_name), "tcp_role");
 }
 CTCPRole::~CTCPRole()
 {

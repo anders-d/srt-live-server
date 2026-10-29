@@ -44,7 +44,7 @@
 
 #include "conf.hpp"
 
-typedef struct DATA_PARAM {
+struct DATA_PARAM {
 	bool readable;
 	bool writable;
 };

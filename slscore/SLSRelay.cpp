@@ -51,7 +51,7 @@ CSLSRelay::CSLSRelay()
     m_relay_manager        = NULL;
     m_need_reconnect       = true;
 
-    sprintf(m_role_name, "relay");
+    snprintf(m_role_name, sizeof(m_role_name), "relay");
 }
 
 CSLSRelay::~CSLSRelay()
@@ -94,7 +94,7 @@ int CSLSRelay::parse_url(char* url, char *host_name, int& port, char * streamid)
     			this, url);
         return SLS_ERROR;
     }
-    sprintf(m_url, "%s", url);
+    snprintf(m_url, sizeof(m_url), "%s", url);
 
 	char * p = url;
     //protocal
@@ -181,7 +181,7 @@ int CSLSRelay::parse_url(char* url, char *host_name, int& port, char * streamid)
     } else {
     	p_tmp = m_url + strlen("srt://");
 		p_tmp = strchr(p, '/');
-    	sprintf(streamid, "%s%s", host_name, p_tmp);
+    	snprintf(streamid, sizeof(streamid), "%s%s", host_name, p_tmp);
     }
     return SLS_OK;
 
@@ -219,7 +219,7 @@ int CSLSRelay::open(const char * srt_url) {
         return SLS_ERROR;
     }
 
-    SRTSOCKET fd = srt_socket(AF_INET, SOCK_DGRAM, 0);
+    SRTSOCKET fd = srt_create_socket();
 
     int status = srt_setsockopt(fd, 0, SRTO_SNDSYN, &no, sizeof no); // for async write
     if (status == SRT_ERROR) {
@@ -240,7 +240,6 @@ int CSLSRelay::open(const char * srt_url) {
     	sls_log(SLS_LOG_ERROR, "[%p]CSLSRelay::open, srt_setsockopt SRTO_TSBPDMODE failure. err=%s.", this, srt_getlasterror_str());
         return SLS_ERROR;
     }
-    /*
     SRT_TRANSTYPE tt = SRTT_LIVE;
     status = srt_setsockopt(fd, 0, SRTO_TRANSTYPE, &tt, sizeof tt);
     if (status == SRT_ERROR) {

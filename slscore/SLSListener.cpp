@@ -27,6 +27,8 @@
 #include <string.h>
 #include <vector>
 
+using namespace std;
+
 #include "SLSListener.hpp"
 #include "SLSLog.hpp"
 #include "SLSPublisher.hpp"
@@ -98,7 +100,7 @@ CSLSListener::CSLSListener()
     memset(m_http_url_role, 0, URL_MAX_LEN);
     memset(m_record_hls_path_prefix, 0, URL_MAX_LEN);
 
-    sprintf(m_role_name, "listener");
+    snprintf(m_role_name, sizeof(m_role_name), "listener");
 }
 
 CSLSListener::~CSLSListener()
@@ -194,7 +196,7 @@ int CSLSListener::init_conf_app()
         return SLS_ERROR;
     }
 
-    int app_count = sls_conf_get_conf_count(conf_app);
+    int app_count = sls_conf_get_conf_count((sls_conf_base_t *)conf_app);
     sls_conf_app_t * ca = conf_app;
     for (int i = 0; i < app_count; i ++) {
         strUplive = ca->app_publisher;
@@ -204,7 +206,7 @@ int CSLSListener::init_conf_app()
             return SLS_ERROR;
         }
         strUplive = strUpliveDomain + "/" + strUplive;
-        m_map_publisher->set_conf(strUplive, ca);
+        m_map_publisher->set_conf(strUplive, (sls_conf_base_t *)ca);
         sls_log(SLS_LOG_INFO, "[%p]CSLSListener::init_conf_app, add app push '%s'.",
                 this, strUplive.c_str());
 
@@ -386,7 +388,7 @@ int CSLSListener::handler()
             this, peer_name, peer_port, host_name, app_name, stream_name);
 
     // app exist?
-    sprintf(key_app, "%s/%s", host_name, app_name);
+    snprintf(key_app, sizeof(key_app), "%s/%s", host_name, app_name);
 
     std::string app_uplive = "";
     sls_conf_app_t * ca = NULL;
@@ -397,7 +399,7 @@ int CSLSListener::handler()
     //3.is player?
     app_uplive = m_map_publisher->get_uplive(key_app);
     if (app_uplive.length() > 0) {
-        sprintf(key_stream_name, "%s/%s", app_uplive.c_str(), stream_name);
+        snprintf(key_stream_name, sizeof(key_stream_name), "%s/%s", app_uplive.c_str(), stream_name);
         CSLSRole * pub = m_map_publisher->get_publisher(key_stream_name);
         if (NULL == pub) {
         	//*
@@ -466,7 +468,7 @@ int CSLSListener::handler()
 		player->set_srt(srt);
 		player->set_map_data(key_stream_name, m_map_data);
 		//stat info
-	    sprintf(tmp, SLS_PLAYER_STAT_INFO_BASE,
+	    snprintf(tmp, sizeof(tmp), SLS_PLAYER_STAT_INFO_BASE,
 	    		m_port, player->get_role_name(), app_uplive.c_str(), stream_name, sid, peer_name, peer_port, cur_time);
 	    std::string stat_info = std::string(tmp);
 	    player->set_stat_info_base(stat_info);
@@ -481,7 +483,7 @@ int CSLSListener::handler()
 
     //4. is publisher?
     app_uplive = key_app;
-	sprintf(key_stream_name, "%s/%s", app_uplive.c_str(), stream_name);
+	snprintf(key_stream_name, sizeof(key_stream_name), "%s/%s", app_uplive.c_str(), stream_name);
     ca = (sls_conf_app_t *)m_map_publisher->get_ca(app_uplive);
 	if (NULL == ca) {
         sls_log(SLS_LOG_ERROR, "[%p]CSLSListener::handler, refused, new role[%s:%d], stream='%s',but no sls_conf_app_t info.",
@@ -502,17 +504,17 @@ int CSLSListener::handler()
 	//create new publisher
 	CSLSPublisher * pub = new CSLSPublisher;
 	pub->set_srt(srt);
-	pub->set_conf(ca);
+	pub->set_conf((sls_conf_base_t *)ca);
 	pub->init();
 	pub->set_idle_streams_timeout(m_idle_streams_timeout_role);
 	//stat info
-    sprintf(tmp, SLS_PUBLISHER_STAT_INFO_BASE,
+    snprintf(tmp, sizeof(tmp), SLS_PUBLISHER_STAT_INFO_BASE,
     		m_port, pub->get_role_name(), app_uplive.c_str(), stream_name, sid, peer_name, peer_port, cur_time);
     std::string stat_info = std::string(tmp);
     pub->set_stat_info_base(stat_info);
     pub->set_http_url(m_http_url_role);
     //set hls record path
-    sprintf(tmp, "%s/%d/%s",
+    snprintf(tmp, sizeof(tmp), "%s/%d/%s",
             m_record_hls_path_prefix, m_port, key_stream_name);
     pub->set_record_hls_path(tmp);
 
@@ -572,7 +574,7 @@ std::string   CSLSListener::get_stat_info()
 	    char tmp[STR_MAX_LEN] = {0};
 	    char cur_time[STR_DATE_TIME_LEN] = {0};
 	    sls_gettime_default_string(cur_time);
-	    sprintf(tmp, SLS_SERVER_STAT_INFO_BASE, m_port, m_role_name, cur_time);
+	    snprintf(tmp, sizeof(tmp), SLS_SERVER_STAT_INFO_BASE, m_port, m_role_name, cur_time);
 	    m_stat_info = std::string(tmp);
 	}
 	return m_stat_info;

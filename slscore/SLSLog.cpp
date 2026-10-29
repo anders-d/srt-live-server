@@ -37,7 +37,7 @@ CSLSLog::CSLSLog()
 {
 	m_level = SLS_LOG_INFO;
 	m_log_file   = NULL;
-    sprintf(log_filename, "");
+    snprintf(log_filename, sizeof(log_filename), "");
 }
 CSLSLog::~CSLSLog()
 {
@@ -83,9 +83,9 @@ void CSLSLog::print_log(int level, const char *fmt, va_list vl)
     cur_time_msec = cur_time_msec - cur_time_sec*1000;
     sls_gettime_fmt(cur_time, cur_time_sec, "%Y-%m-%d %H:%M:%S");
     vsnprintf (buf , 4095 , fmt , vl);
-    //sprintf(buf_info, "%s %s: %s\n" , cur_time, LOG_LEVEL_NAME[level], buf);
-    sprintf(buf_info, "%s:%03d %s %s: %s\n" , cur_time, (int)cur_time_msec, APP_NAME, LOG_LEVEL_NAME[level], buf);
-    printf(buf_info);
+    //snprintf(buf_info, sizeof(buf_info), "%s %s: %s\n" , cur_time, LOG_LEVEL_NAME[level], buf);
+    snprintf(buf_info, sizeof(buf_info), "%s:%03d %s %s: %s\n" , cur_time, (int)cur_time_msec, APP_NAME, LOG_LEVEL_NAME[level], buf);
+    printf("%s", buf_info);
 
     if (m_log_file) {
         fwrite(buf_info, strlen(buf_info), 1, m_log_file);
@@ -102,7 +102,7 @@ void CSLSLog::set_log_level(char * level)
     for (int i = 0; i < n; i ++) {
         if (strcmp(level, LOG_LEVEL_NAME[i]) == 0) {
             m_pInstance->m_level = i;
-            printf("set log level='%s'.\n" , level, LOG_LEVEL_NAME[i]);
+            printf("set log level='%s'.\n", LOG_LEVEL_NAME[i]);
             return ;
         }
     }
@@ -115,7 +115,7 @@ void CSLSLog::set_log_file(char * file_name)
         m_pInstance = new CSLSLog();
 
     if (strlen(m_pInstance->log_filename) == 0) {
-        sprintf(m_pInstance->log_filename, "%s", file_name);
+        snprintf(m_pInstance->log_filename, sizeof(m_pInstance->log_filename), "%s", file_name);
         m_pInstance->m_log_file = fopen(m_pInstance->log_filename, "a");
     }
 

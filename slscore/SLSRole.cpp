@@ -68,17 +68,17 @@ CSLSRole::CSLSRole()
     m_need_reconnect  = false;
     m_http_client     = NULL;
 
-    sprintf(m_record_hls, "off");//default off
+    snprintf(m_record_hls, sizeof(m_record_hls), "off");//default off
     m_record_hls_ts_fd   = 0;
     memset(m_record_hls_ts_filename, 0, URL_MAX_LEN);
     m_record_hls_vod_fd   = 0;
     memset(m_record_hls_vod_filename, 0, URL_MAX_LEN);
-    sprintf(m_record_hls_path, "./vod");//default current path
+    snprintf(m_record_hls_path, sizeof(m_record_hls_path), "./vod");//default current path
     m_record_hls_begin_tm_ms = 0;
     m_record_hls_segment_duration   = 10;//default 10s
     m_record_hls_target_duration    = m_record_hls_segment_duration;
 
-	sprintf(m_role_name, "role");
+	snprintf(m_role_name, sizeof(m_role_name), "role");
 }
 
 CSLSRole::~CSLSRole()
@@ -256,7 +256,7 @@ void CSLSRole::set_conf(sls_conf_base_t * conf)
     m_conf = conf;
 }
 
-void CSLSRole::set_map_data(char *map_key, CSLSMapData *map_data)
+void CSLSRole::set_map_data(const char *map_key, CSLSMapData *map_data)
 {
 	if (NULL != map_key) {
         strcpy(m_map_data_key, map_key);
@@ -315,7 +315,7 @@ void CSLSRole::close_hls_file()
         int vod_fd = 0;
         vod_fd = ::open(m_record_hls_vod_filename, O_RDONLY, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IXOTH);
         sls_log(SLS_LOG_INFO, "[%p]CSLSRole::close_hls_file, prepare open '%s', fd=%d.", this, m_record_hls_vod_filename, vod_fd);
-        sprintf(m_record_hls_vod_filename, "%s/vod.m3u8", m_record_hls_path);
+        snprintf(m_record_hls_vod_filename, sizeof(m_record_hls_vod_filename), "%s/vod.m3u8", m_record_hls_path);
         struct stat stat_file;
         if (0 == stat(m_record_hls_vod_filename, &stat_file)) {
             m_record_hls_vod_fd = ::open(m_record_hls_vod_filename, O_WRONLY|O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IXOTH);
@@ -324,7 +324,7 @@ void CSLSRole::close_hls_file()
         }
         //write header
         char m3u8_info[URL_MAX_LEN] = {0};
-        sprintf(m3u8_info, "#EXTM3U\n\
+        snprintf(m3u8_info, sizeof(m3u8_info), "#EXTM3U\n\
 #EXT-X-VERSION:3\n\
 #EXT-X-TARGETDURATION:%d\n", (int)(m_record_hls_target_duration+1));
         ::write(m_record_hls_vod_fd, m3u8_info, strlen(m3u8_info));
@@ -343,7 +343,7 @@ void CSLSRole::close_hls_file()
         }
         ::close(vod_fd);
 
-        sprintf(m3u8_info, "#EXT-X-ENDLIST");
+        snprintf(m3u8_info, sizeof(m3u8_info), "#EXT-X-ENDLIST");
         ::write(m_record_hls_vod_fd, m3u8_info, strlen(m3u8_info));
         ::close(m_record_hls_vod_fd);
         m_record_hls_vod_fd = 0;
@@ -380,10 +380,10 @@ void CSLSRole::check_hls_file()
          m_record_hls_ts_fd = 0;
 
          char ts_item[URL_MAX_LEN] = {0};
-         sprintf(ts_item, "#EXTINF:%0.3f,\n%s\n", d, m_record_hls_ts_filename);
+         snprintf(ts_item, sizeof(ts_item), "#EXTINF:%0.3f,\n%s\n", d, m_record_hls_ts_filename);
          //update vod file
          if (0 == m_record_hls_vod_fd) {
-             sprintf(m_record_hls_vod_filename, "%s/vod-%lld.m3u8.extinfo", m_record_hls_path, cur_tm_ms/1000);
+             snprintf(m_record_hls_vod_filename, sizeof(m_record_hls_vod_filename), "%s/vod-%lld.m3u8.extinfo", m_record_hls_path, cur_tm_ms/1000);
              struct stat stat_file;
              if (0 == stat(m_record_hls_vod_filename, &stat_file)) {
                  m_record_hls_vod_fd = ::open(m_record_hls_vod_filename, O_WRONLY|O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IXOTH);
@@ -397,8 +397,8 @@ void CSLSRole::check_hls_file()
          }
     }
     char full_ts_name[URL_MAX_LEN] = {0};
-    sprintf(m_record_hls_ts_filename, "%lld.ts", cur_tm_ms/1000);
-    sprintf(full_ts_name, "%s/%s", m_record_hls_path, m_record_hls_ts_filename);
+    snprintf(m_record_hls_ts_filename, sizeof(m_record_hls_ts_filename), "%lld.ts", cur_tm_ms/1000);
+    snprintf(full_ts_name, sizeof(full_ts_name), "%s/%s", m_record_hls_path, m_record_hls_ts_filename);
     m_record_hls_ts_fd = ::open(full_ts_name, O_WRONLY|O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IXOTH);
     sls_log(SLS_LOG_INFO, "[%p]CSLSRole::check_hls_file, create ts file='%s', fd=%d.", this, full_ts_name, m_record_hls_ts_fd);
     if (m_record_hls_ts_fd) {
@@ -427,7 +427,7 @@ void CSLSRole::record_data2hls(char* data, int len)
     if (strlen(out_file_name) == 0) {
     char cur_tm[256];
     sls_gettime_default_string(cur_tm);
-    sprintf(out_file_name, "./obs_%s.ts", cur_tm);
+    snprintf(out_file_name, sizeof(out_file_name), "./obs_%s.ts", cur_tm);
     }
     static int fd_out = open(out_file_name, O_WRONLY|O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IXOTH);
 
@@ -564,7 +564,7 @@ void   CSLSRole::set_stat_info_base(std::string &v)
 std::string   CSLSRole::get_stat_info()
 {
 	char tmp[STR_MAX_LEN] = {0};
-    sprintf(tmp, "\"%d\"}", m_kbitrate);
+    snprintf(tmp, sizeof(tmp), "\"%d\"}", m_kbitrate);
 	return m_stat_info_base + std::string(tmp);
 }
 
@@ -603,7 +603,7 @@ int  CSLSRole::on_connect()
 	if (strlen(m_peer_ip) == 0) {
 		get_peer_info(m_peer_ip, m_peer_port);
 	}
-	sprintf(on_event_url, "%s?on_event=on_connect&role_name=%s&srt_url=%s&remote_ip=%s&remote_port=%d",
+	snprintf(on_event_url, sizeof(on_event_url), "%s?on_event=on_connect&role_name=%s&srt_url=%s&remote_ip=%s&remote_port=%d",
 			m_http_url, m_role_name, get_streamid(), m_peer_ip, m_peer_port);
 
 	return m_http_client->open(on_event_url);
@@ -625,7 +625,7 @@ int  CSLSRole::on_close()
 	if (strlen(m_peer_ip) == 0) {
 		get_peer_info(m_peer_ip, m_peer_port);
 	}
-	sprintf(on_event_url, "%s?on_event=on_close&role_name=%s&srt_url=%s&remote_ip=%s&remote_port=%d",
+	snprintf(on_event_url, sizeof(on_event_url), "%s?on_event=on_close&role_name=%s&srt_url=%s&remote_ip=%s&remote_port=%d",
 			m_http_url, m_role_name, get_streamid(), m_peer_ip, m_peer_port);
 
 	int ret = m_http_client->open(on_event_url);

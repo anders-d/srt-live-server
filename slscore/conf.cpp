@@ -29,6 +29,8 @@
 #include <iostream>
 #include <fstream>
 
+using namespace std;
+
 #include "conf.hpp"
 #include "common.hpp"
 #include "SLSLog.hpp"
@@ -41,7 +43,7 @@ sls_runtime_conf_t * sls_runtime_conf_t::first = NULL;
 /*
  * runtime conf
  */
-sls_runtime_conf_t::sls_runtime_conf_t(char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len)
+sls_runtime_conf_t::sls_runtime_conf_t(const char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len)
 {
     conf_name      = c;
     create_fn      = f;

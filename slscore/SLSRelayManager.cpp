@@ -106,7 +106,7 @@ int CSLSRelayManager::connect(const char *url)
         int  relay_peer_port = 0;
         cur_relay->get_peer_info(relay_peer_name, relay_peer_port);
         cur_relay->get_stat_base(stat_base);
-	    sprintf(tmp, stat_base,
+	    snprintf(tmp, sizeof(tmp), stat_base,
 	    		m_listen_port, cur_relay->get_role_name(), m_app_uplive, m_stream_name, url, relay_peer_name, relay_peer_port, cur_time);
 	    std::string stat_info = std::string(tmp);
 	    cur_relay->set_stat_info_base(stat_info);
@@ -132,7 +132,7 @@ int CSLSRelayManager::connect_hash()
 	std::string url = get_hash_url();
 	char szURL[1024] = {0};
 	const char *szTmp = url.c_str();
-	sprintf(szURL, "srt://%s/%s", szTmp, m_stream_name);
+	snprintf(szURL, sizeof(szURL), "srt://%s/%s", szTmp, m_stream_name);
 	int ret = connect(szURL);
 	if (SLS_OK != ret) {
 	    sls_log(SLS_LOG_INFO, "[%p]CSLSRelayManager::connect_hash, faild, connect szURL=%s, m_stream_name=%s.",

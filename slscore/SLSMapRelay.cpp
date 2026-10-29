@@ -28,6 +28,8 @@
 #include <errno.h>
 #include <string.h>
 
+using namespace std;
+
 #include "SLSPullerManager.hpp"
 #include "SLSPusherManager.hpp"
 #include "SLSLog.hpp"

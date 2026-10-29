@@ -45,6 +45,7 @@
 #include <string>
 #include <vector>
 
+using namespace std;
 
 #include "common.hpp"
 
@@ -103,7 +104,7 @@ void sls_gettime_default_string(char *cur_time)
     sls_gettime_fmt(cur_time, cur_time_sec, "%Y-%m-%d %H:%M:%S");
 }
 
-void sls_gettime_fmt(char *dst, int64_t cur_time_sec, char *fmt)
+void sls_gettime_fmt(char *dst, int64_t cur_time_sec, const char *fmt)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -372,7 +373,7 @@ int sls_write_pid(int pid)
     	return -1;
     }
     char buf[128] = {0};
-    sprintf(buf, "%d", pid);
+    snprintf(buf, sizeof(buf), "%d", pid);
     write(fd, buf, strlen(buf));
     close(fd);
 	printf("write pid ok, file='%s', pid=%s.\n", pid_file_name, buf);
@@ -398,7 +399,7 @@ int sls_send_cmd(const char *cmd)
 	}
 	int pid = sls_read_pid();
 	if (0 >= pid) {
-    	printf("sls_send_cmd failed, pid is invalid.\n", pid);
+    	printf("sls_send_cmd failed, pid is invalid: %d\n", pid);
         return SLS_OK;
 	}
 

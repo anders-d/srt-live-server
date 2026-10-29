@@ -38,7 +38,7 @@ CSLSPlayer::CSLSPlayer()
 {
     m_is_write = 1;
 
-    sprintf(m_role_name, "player");
+    snprintf(m_role_name, sizeof(m_role_name), "player");
 }
 
 CSLSPlayer::~CSLSPlayer()

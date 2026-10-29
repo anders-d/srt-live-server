@@ -177,7 +177,7 @@ int64_t CTSFileTimeReader::generate_rts_file(const char  *ts_file_name)
     	return ret;
     }
     char rts_file_name[URL_MAX_LEN] = {0};
-    sprintf(rts_file_name, "%s.rts", ts_file_name);
+    snprintf(rts_file_name, sizeof(rts_file_name), "%s.rts", ts_file_name);
     strcpy(m_file_name, rts_file_name);
 
     struct stat rts_file;

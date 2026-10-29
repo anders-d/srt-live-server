@@ -123,8 +123,8 @@ SRTS_NONEXIST:
     printf("--------srt error--------\n");
     std::map<int, std::string>::iterator it;
     for(it=map_error.begin(); it!=map_error.end(); ++it) {
-        sprintf(szBuf, "%d: %s\n", it->first, it->second.c_str());
-        printf(szBuf);
+        snprintf(szBuf, sizeof(szBuf), "%d: %s\n", it->first, it->second.c_str());
+        printf("%s", szBuf);
     }
     printf("----------end------------\n");
     map_error.clear();
@@ -173,7 +173,7 @@ int CSLSSrt::libsrt_setup(int port)
         return ret;
     }
 
-    fd = srt_socket(ai->ai_family, ai->ai_socktype, 0);
+    fd = srt_create_socket();
     if (fd < 0) {
         ret = libsrt_neterrno();
         freeaddrinfo(ai);
@@ -235,11 +235,11 @@ int handle_srt_listen_callback(void* opaque, SRTSOCKET ns, int hs_version, const
     CSLSSrt* tmp = (CSLSSrt*)(opaque);
     char * pass_url = tmp->get_passphrase_endpoint();
 
-    if (NULL != pass_url && sizeof(pass_url) > 0) {
+    if (NULL != pass_url && strlen(pass_url) > 0) {
         CHttpClient* m_http_client = new CHttpClient;
 
         char get_passphrase_url[URL_MAX_LEN] = {0};
-        sprintf(get_passphrase_url, "%s?streamid=%s",
+        snprintf(get_passphrase_url, sizeof(get_passphrase_url), "%s?streamid=%s",
                 pass_url, streamid);
 
         m_http_client->open(get_passphrase_url);
@@ -294,7 +294,7 @@ int handle_srt_listen_callback(void* opaque, SRTSOCKET ns, int hs_version, const
 int CSLSSrt::libsrt_listen(int backlog)
 {
     m_sc.backlog = backlog;
-    if (NULL != m_http_url_passphrase && strlen(m_http_url_passphrase) > 0) {
+    if (m_http_url_passphrase[0] != '\0') {
         (void)srt_listen_callback(m_sc.fd, &handle_srt_listen_callback, this);
     }
     int ret = srt_listen(m_sc.fd, backlog);

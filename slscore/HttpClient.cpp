@@ -66,8 +66,8 @@ CHttpClient::CHttpClient()
     m_callback_context = NULL;
 
     m_response_info.m_response_content_length    = -1;
-    sprintf(m_role_name, "http_client");
-    sprintf(m_http_method, "POST");
+    snprintf(m_role_name, sizeof(m_role_name), "http_client");
+    snprintf(m_http_method, sizeof(m_http_method), "POST");
 
 }
 
@@ -81,7 +81,7 @@ int  CHttpClient::open(const char *url, const char *method, int interval)
     m_begin_tm_ms = sls_gettime_ms();
     int ret = SLS_OK;
 	strcpy(m_url, url);
-	if (NULL == m_url) {
+	if (m_url[0] == '\0') {
         sls_log(SLS_LOG_INFO, "[%p]CHttpClient::open, failed, m_url is NULL.", this);
 		goto FUNC_END;
 	}
@@ -437,7 +437,7 @@ int CHttpClient::handler()
 int CHttpClient::parse_url()
 {
     //http://hostname:port/sls?method=stat or http://hostname:port/sls?method=on_connect&srt_url=srt://....
-    if (NULL == m_url || strlen(m_url) == 0) {
+    if (m_url[0] == '\0') {
     	return SLS_ERROR;
     }
 
@@ -498,7 +498,7 @@ int CHttpClient::parse_url()
 
 int CHttpClient::write_http_header(int data_len)
 {
-	std:string http_header;
+	std::string http_header;
 	char data[HTTP_HEADER_SIZE] = {0};
 
 	if (strcmp(m_http_method, "GET") != 0 && strcmp(m_http_method, "POST") != 0) {
@@ -506,18 +506,18 @@ int CHttpClient::write_http_header(int data_len)
             this, m_http_method);
 		return SLS_ERROR;
 	}
-	sprintf(data, "%s %s HTTP/1.1\r\n", m_http_method, m_uri);
+	snprintf(data, sizeof(data), "%s %s HTTP/1.1\r\n", m_http_method, m_uri);
 	http_header = std::string(data);
 
 	http_header += std::string(HTTP_REQUEST_HEADER_ACCEPT);
 	http_header += std::string(HTTP_REQUEST_HEADER_USER_AGENT);
 	http_header += std::string(HTTP_REQUEST_HEADER_CONTENT_TYPE);
 
-	sprintf(data, "Host: %s\r\n", m_remote_host);
+	snprintf(data, sizeof(data), "Host: %s\r\n", m_remote_host);
 	http_header += std::string(data);
 
 	if (data_len > 0) {
-	    sprintf(data, "Content-Length: %d\r\n", data_len);
+	    snprintf(data, sizeof(data), "Content-Length: %d\r\n", data_len);
 	    http_header += std::string(data);
 	}
 

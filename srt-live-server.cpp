@@ -26,8 +26,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-
-using namespace std;
+#include <list>
 
 #include "SLSLog.hpp"
 #include "SLSManager.hpp"
@@ -79,7 +78,7 @@ int main(int argc, char* argv[])
     sls_opt_t           sls_opt;
 
     CSLSManager             *sls_manager = NULL;
-    std:list <CSLSManager*>  reload_manager_list;
+    std::list <CSLSManager*>  reload_manager_list;
     CHttpClient             *http_stat_client = new CHttpClient;
 
     int ret = SLS_OK;
@@ -133,7 +132,7 @@ int main(int argc, char* argv[])
 
     //parse conf file
     if (strlen(sls_opt.conf_file_name) == 0) {
-        sprintf(sls_opt.conf_file_name, "./sls.conf");
+        snprintf(sls_opt.conf_file_name, sizeof(sls_opt.conf_file_name), "./sls.conf");
     }
     ret = sls_conf_open(sls_opt.conf_file_name);
     if (ret!= SLS_OK) {

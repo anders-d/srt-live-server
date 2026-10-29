@@ -42,7 +42,7 @@ enum HTTP_CALLBACK_TYPE {
 #define HTTP_RESPONSE_CODE_200 "200"
 
 typedef int (*HTTP_CALLBACK)(void *p, HTTP_CALLBACK_TYPE type, void *v, void* context);
-typedef struct HTTP_RESPONSE_INFO {
+struct HTTP_RESPONSE_INFO {
 	std::vector<std::string> m_response_header;
 	std::string              m_response_code;
 	std::string              m_response_content;

@@ -79,7 +79,7 @@ public :
     char      * get_role_name();
 
     void        set_conf(sls_conf_base_t *conf);
-    void        set_map_data(char *map_key, CSLSMapData *map_data);
+    void        set_map_data(const char *map_key, CSLSMapData *map_data);
 
     void        set_idle_streams_timeout(int timeout);
     bool        check_idle_streams_duration(int64_t cur_time_ms = 0);

@@ -32,7 +32,7 @@
 #include <vector>
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 /*
  * conf file structure
@@ -87,7 +87,7 @@ const char * sls_conf_set_bool  (const char *v, sls_conf_cmd_t *cmd, void *conf)
 typedef struct sls_conf_base_t sls_conf_base_s;
 typedef sls_conf_base_t * (*create_conf_func)();
 struct sls_runtime_conf_t {
-    char                    * conf_name;
+    const char              * conf_name;
 //    char                    * higher_conf_names;//if allow existing in one than one higher conf , split with '|'
     create_conf_func          create_fn;
     sls_conf_cmd_t          * conf_cmd;
@@ -95,15 +95,16 @@ struct sls_runtime_conf_t {
 
     sls_runtime_conf_t        * next;
     static sls_runtime_conf_t * first;
-    sls_runtime_conf_t(char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len);
+    sls_runtime_conf_t(const char * c, create_conf_func f, sls_conf_cmd_t * cmd, int len);
 };
 
 /*
- * conf base, each actual conf must inherit from it,
- * decare a new conf please use macro SLS_CONF_DYNAMIC_DECLARE_BEGIN
+ * conf base. Each actual conf repeats these fields first so the type stays
+ * standard-layout (required for offsetof in SLS_SET_CONF).
+ * declare a new conf please use macro SLS_CONF_DYNAMIC_DECLARE_BEGIN
  */
 struct sls_conf_base_t {
-    char            * name;
+    const char      * name;
     sls_conf_base_t * sibling;
     sls_conf_base_t * child;
 };
@@ -112,7 +113,10 @@ struct sls_conf_base_t {
  * conf dynamic macro
  */
 #define SLS_CONF_DYNAMIC_DECLARE_BEGIN(c_n)\
-struct sls_conf_##c_n##_t : public sls_conf_base_t {\
+struct sls_conf_##c_n##_t {\
+    const char      * name;\
+    sls_conf_base_t * sibling;\
+    sls_conf_base_t * child;\
     static sls_runtime_conf_t runtime_conf;\
     static sls_conf_base_t * create_conf();
 
@@ -122,12 +126,12 @@ struct sls_conf_##c_n##_t : public sls_conf_base_t {\
 #define SLS_CONF_DYNAMIC_IMPLEMENT(c_n)\
 sls_conf_base_t * sls_conf_##c_n##_t::create_conf()\
 {\
-    sls_conf_base_t * p = new sls_conf_##c_n##_t ;\
+    sls_conf_##c_n##_t * p = new sls_conf_##c_n##_t ;\
     memset(p, 0, sizeof(sls_conf_##c_n##_t));\
     p->child     = NULL;\
     p->sibling   = NULL;\
     p->name = sls_conf_##c_n##_t::runtime_conf.conf_name;\
-    return p;\
+    return (sls_conf_base_t *)p;\
 }\
 sls_runtime_conf_t   sls_conf_##c_n##_t::runtime_conf(\
     #c_n,\
@@ -179,7 +183,7 @@ int sls_parse_argv(int argc, char * argv[], sls_opt_t * sls_opt, sls_conf_cmd_t 
 
 sls_conf_cmd_t  * sls_conf_find(const char *n, sls_conf_cmd_t *cmd, int size);
 sls_conf_base_t * sls_conf_get_root_conf();
-vector<string>    sls_conf_string_split(const string& str, const string& delim);
+std::vector<std::string>    sls_conf_string_split(const std::string& str, const std::string& delim);
 
 
 

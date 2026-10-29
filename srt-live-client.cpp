@@ -27,8 +27,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-using namespace std;
-
 #include "SLSLog.hpp"
 #include "SLSClient.hpp"
 
